@@ -1,0 +1,16 @@
+Flask
+Flask-SQLAlchemy
+Flask-Login
+Werkzeug
+Pillow
+Flask-PyMongo
+Flask-WTF
+WTForms
+Werkzeug
+torch
+torchvision
+pymongo
+python-dotenv
+bcrypt
+email-validator
+geopy
