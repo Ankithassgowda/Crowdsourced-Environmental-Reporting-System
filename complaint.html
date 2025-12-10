@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Report Environmental Issue{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Report Environmental Issue
+                    </h2>
+                    <p class="mb-0 mt-2">Help us protect the environment by reporting issues in your area</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data" id="complaintForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="issue_type" class="form-label fw-bold">
+                                    <i class="fas fa-list me-1"></i>Issue Type
+                                </label>
+                                <select class="form-select" id="issue_type" name="issue_type" required>
+                                    <option value="">Select Issue Type</option>
+                                    <option value="cutting_trees">
+                                        <i class="fas fa-tree"></i> Tree Cutting / Deforestation
+                                    </option>
+                                    <option value="garbage">
+                                        <i class="fas fa-trash"></i> Garbage / Waste Problem
+                                    </option>
+                                    <option value="polluted_water">
+                                        <i class="fas fa-water"></i> Water Pollution
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="location" class="form-label fw-bold">
+                                    <i class="fas fa-map-marker-alt me-1"></i>Location
+                                </label>
+                                <div id="map"></div>
+                                <input type="hidden" id="latitude" name="latitude">
+                                <input type="hidden" id="longitude" name="longitude">
+                                <button type="button" class="btn btn-secondary mt-2" id="getLocationBtn">
+                                    <i class="fas fa-my-location me-1"></i>Get My Location
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-bold">
+                                <i class="fas fa-align-left me-1"></i>Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="4" 
+                                      placeholder="Provide detailed description of the environmental issue..." required></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="images" class="form-label fw-bold">
+                                <i class="fas fa-camera me-1"></i>Upload Images (3-5 required)
+                            </label>
+                            <input type="file" class="form-control" id="images" name="images" 
+                                   accept="image/*" multiple required>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Please upload between 3 and 5 clear images showing the environmental issue. 
+                                Accepted formats: JPG, PNG, GIF (Max 16MB per file)
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-outline-secondary me-md-2" 
+                                    onclick="window.history.back()">
+                                <i class="fas fa-arrow-left me-1"></i>Cancel
+                            </button>
+                            <button type="submit" class="btn btn-success" id="submitBtn">
+                                <i class="fas fa-paper-plane me-1"></i>Submit Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<style>
+    #map {
+        height: 400px;
+        width: 100%;
+        border-radius: 0.25rem;
+        border: 1px solid #ced4da;
+    }
+</style>
+
+<script>
+document.getElementById('images').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (files.length < 3 || files.length > 5) {
+        alert('Please select between 3 and 5 images. Currently selected: ' + files.length);
+        submitBtn.disabled = true;
+        return;
+    }
+    
+    submitBtn.disabled = false;
+});
+
+document.getElementById('complaintForm').addEventListener('submit', function() {
+    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Submitting...';
+    document.getElementById('submitBtn').disabled = true;
+});
+
+const map = L.map('map').setView([20.5937, 78.9629], 5); // Default view (India)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+let marker;
+
+function updateLocation(lat, lng) {
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+    if (marker) {
+        marker.setLatLng([lat, lng]);
+    } else {
+        marker = L.marker([lat, lng]).addTo(map);
+    }
+    map.setView([lat, lng], 15);
+}
+
+map.on('click', function(e) {
+    updateLocation(e.latlng.lat, e.latlng.lng);
+});
+
+document.getElementById('getLocationBtn').addEventListener('click', function() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            updateLocation(position.coords.latitude, position.coords.longitude);
+        }, function() {
+            alert('Error: The Geolocation service failed.');
+        });
+    } else {
+        alert("Error: Your browser doesn't support geolocation.");
+    }
+});
+</script>
+{% endblock %}

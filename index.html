@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold text-white mb-4">
+                    Protecting Our Environment Together
+                </h1>
+                <p class="lead text-white mb-4">
+                    Join our mission to monitor and combat environmental issues. Report problems, 
+                    track progress, and make a difference in your community.
+                </p>
+                {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-success btn-lg me-3">
+                        <i class="fas fa-user-plus me-2"></i>Get Started
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('complaint') }}" class="btn btn-success btn-lg me-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Report Issue
+                    </a>
+                {% endif %}
+                <a href="#about" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-info-circle me-2"></i>Learn More
+                </a>
+            </div>
+            <div class="col-lg-6">
+                <img src="https://static.vecteezy.com/system/resources/previews/002/337/084/large_2x/save-our-planet-earth-illustration-to-green-environment-with-eco-friendly-concept-and-protection-from-natural-damage-vector.jpg" 
+                     class="img-fluid rounded shadow" alt="Environment">
+            </div>
+        </div>
+    </div>
+</div>
+
+<section id="issues" class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Major Environmental Issues</h2>
+            <p class="lead">Understanding the challenges we face</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card issue-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="issue-icon mb-3">
+                            <img src="https://img.icons8.com/?size=100&id=RzD5LQS2HOnF&format=png&color=000000" alt="Tree Cutting">
+                        </div>
+                        <h5 class="card-title">Deforestation</h5>
+                        <p class="card-text">
+                            Illegal tree cutting and deforestation threaten our ecosystems, 
+                            contributing to climate change and habitat loss.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card issue-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="issue-icon mb-3">
+                            <img src="https://img.icons8.com/color/96/000000/trash.png" alt="Garbage">
+                        </div>
+                        <h5 class="card-title">Waste Pollution</h5>
+                        <p class="card-text">
+                            Improper waste disposal and littering create health hazards 
+                            and damage our natural environments.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card issue-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="issue-icon mb-3">
+                            <img src="https://img.icons8.com/?size=100&id=t5PTj60CG7zA&format=png&color=000000" alt="Water Pollution">
+                        </div>
+                        <h5 class="card-title">Water Pollution</h5>
+                        <p class="card-text">
+                            Contaminated water sources affect drinking water quality 
+                            and aquatic ecosystems worldwide.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09" 
+                     class="img-fluid rounded shadow" alt="Our Project">
+            </div>
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-4">About Our Project</h2>
+                <p class="mb-4">
+                    Our Environmental Issues Monitoring System uses advanced AI technology 
+                    to automatically detect and classify environmental problems from user-submitted images.
+                </p>
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <div class="d-flex">
+                            <div class="feature-icon me-3">
+                                <img src="https://img.icons8.com/color/48/000000/artificial-intelligence.png" alt="AI">
+                            </div>
+                            <div>
+                                <h6 class="fw-bold">AI-Powered Detection</h6>
+                                <small class="text-muted">Automatic issue classification</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <div class="d-flex">
+                            <div class="feature-icon me-3">
+                                <img src="https://img.icons8.com/color/48/000000/smartphone.png" alt="Mobile">
+                            </div>
+                            <div>
+                                <h6 class="fw-bold">Easy Reporting</h6>
+                                <small class="text-muted">Submit issues with photos</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <div class="d-flex">
+                            <div class="feature-icon me-3">
+                                <img src="https://img.icons8.com/color/48/000000/dashboard.png" alt="Dashboard">
+                            </div>
+                            <div>
+                                <h6 class="fw-bold">Admin Dashboard</h6>
+                                <small class="text-muted">Comprehensive management</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <div class="d-flex">
+                            <div class="feature-icon me-3">
+                                <img src="https://img.icons8.com/color/48/000000/statistics.png" alt="Tracking">
+                            </div>
+                            <div>
+                                <h6 class="fw-bold">Progress Tracking</h6>
+                                <small class="text-muted">Monitor issue resolution</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-success text-white">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Ready to Make a Difference?</h2>
+        <p class="lead mb-4">Join our community and help protect the environment</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-arrow-right me-2"></i>Start Reporting Issues
+            </a>
+        {% else %}
+            <a href="{{ url_for('complaint') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-camera me-2"></i>Report an Issue Now
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

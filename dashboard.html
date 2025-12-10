@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="fw-bold">
+                    <i class="fas fa-tachometer-alt me-2 text-success"></i>Admin Dashboard
+                </h1>
+                <span class="badge bg-success fs-6">Administrator Panel</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card stats-card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Tree Cutting Issues</h6>
+                            <h2 class="card-title mb-0">{{ stats.type_stats.get('cutting_trees', 0) }}</h2>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-tree fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Garbage Problems</h6>
+                            <h2 class="card-title mb-0">{{ stats.type_stats.get('garbage', 0) }}</h2>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-trash fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Water Pollution</h6>
+                            <h2 class="card-title mb-0">{{ stats.type_stats.get('polluted_water', 0) }}</h2>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-water fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Total Issues</h6>
+                            <h2 class="card-title mb-0">
+                                {{ stats.type_stats.get('cutting_trees', 0) + 
+                                   stats.type_stats.get('garbage', 0) + 
+                                   stats.type_stats.get('polluted_water', 0) }}
+                            </h2>
+                        </div>
+                        <div class="stats-icon">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Status Overview -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Pending Issues</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-4 text-danger">{{ stats.status_stats.get('Pending', 0) }}</h1>
+                    <p class="text-muted">Awaiting Review</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Under Review</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-4 text-warning">{{ stats.status_stats.get('Under-review', 0) }}</h1>
+                    <p class="text-muted">Being Processed</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-check me-2"></i>Resolved</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-4 text-success">{{ stats.status_stats.get('Resolved', 0) }}</h1>
+                    <p class="text-muted">Completed</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-times me-2"></i>Rejected</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-4 text-secondary">{{ stats.status_stats.get('Rejected', 0) }}</h1>
+                    <p class="text-muted">Not Approved</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Prediction Analysis -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-gradient-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i>AI Prediction Accuracy</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="p-3">
+                                <h2 class="text-success mb-2">{{ stats.mismatch_stats.get(False, 0) }}</h2>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-check-circle text-success me-1"></i>
+                                    Accurate Predictions
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3">
+                                <h2 class="text-warning mb-2">{{ stats.mismatch_stats.get(True, 0) }}</h2>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+                                    Need Manual Review
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress mt-3">
+                        {% set total = stats.mismatch_stats.get(False, 0) + stats.mismatch_stats.get(True, 0) %}
+                        {% if total > 0 %}
+                            {% set accuracy = (stats.mismatch_stats.get(False, 0) / total * 100) %}
+                            <div class="progress-bar bg-success" style="width: {{ accuracy }}%"></div>
+                            <div class="progress-bar bg-warning" style="width: {{ 100 - accuracy }}%"></div>
+                        {% endif %}
+                    </div>
+                    {% if total > 0 %}
+                        <small class="text-muted">
+                            AI Accuracy: {{ "%.1f" | format((stats.mismatch_stats.get(False, 0) / total * 100)) }}%
+                        </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Issue Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-4 text-center">
+                            <div class="p-2">
+                                <div class="circular-progress" data-percentage="{{ (stats.type_stats.get('cutting_trees', 0) / (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) * 100) if (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) > 0 else 0 }}">
+                                    <span class="percentage">{{ "%.0f" | format((stats.type_stats.get('cutting_trees', 0) / (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) * 100) if (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) > 0 else 0) }}%</span>
+                                </div>
+                                <small class="text-muted">Trees</small>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="p-2">
+                                <div class="circular-progress" data-percentage="{{ (stats.type_stats.get('garbage', 0) / (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) * 100) if (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) > 0 else 0 }}">
+                                    <span class="percentage">{{ "%.0f" | format((stats.type_stats.get('garbage', 0) / (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) * 100) if (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) > 0 else 0) }}%</span>
+                                </div>
+                                <small class="text-muted">Garbage</small>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="p-2">
+                                <div class="circular-progress" data-percentage="{{ (stats.type_stats.get('polluted_water', 0) / (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) * 100) if (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) > 0 else 0 }}">
+                                    <span class="percentage">{{ "%.0f" | format((stats.type_stats.get('polluted_water', 0) / (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) * 100) if (stats.type_stats.get('cutting_trees', 0) + stats.type_stats.get('garbage', 0) + stats.type_stats.get('polluted_water', 0)) > 0 else 0) }}%</span>
+                                </div>
+                                <small class="text-muted">Water</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card action-card h-100">
+                <div class="card-body text-center p-4">
+                    <img src="https://img.icons8.com/?size=100&id=RzD5LQS2HOnF&format=png&color=000000" alt="Tree Issues" class="mb-3">
+                    <h5>Manage Tree Cutting Issues</h5>
+                    <p class="text-muted">Review and manage deforestation reports</p>
+                    <div class="mb-3">
+                        {% if stats.mismatch_stats.get(True, 0) > 0 %}
+                            <span class="badge bg-warning">
+                                {{ stats.mismatch_stats.get(True, 0) }} need review
+                            </span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('admin_cutting_trees') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-right me-1"></i>View Issues
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card action-card h-100">
+                <div class="card-body text-center p-4">
+                    <img src="https://img.icons8.com/color/64/000000/trash.png" alt="Garbage Issues" class="mb-3">
+                    <h5>Manage Garbage Problems</h5>
+                    <p class="text-muted">Handle waste and pollution reports</p>
+                    <div class="mb-3">
+                        {% if stats.mismatch_stats.get(True, 0) > 0 %}
+                            <span class="badge bg-warning">
+                                {{ stats.mismatch_stats.get(True, 0) }} need review
+                            </span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('admin_garbage') }}" class="btn btn-warning">
+                        <i class="fas fa-arrow-right me-1"></i>View Issues
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card action-card h-100">
+                <div class="card-body text-center p-4">
+                    <img src="https://img.icons8.com/?size=100&id=t5PTj60CG7zA&format=png&color=000000" alt="Water Issues" class="mb-3">
+                    <h5>Manage Water Pollution</h5>
+                    <p class="text-muted">Address water contamination issues</p>
+                    <div class="mb-3">
+                        {% if stats.mismatch_stats.get(True, 0) > 0 %}
+                            <span class="badge bg-warning">
+                                {{ stats.mismatch_stats.get(True, 0) }} need review
+                            </span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('admin_polluted_water') }}" class="btn btn-info">
+                        <i class="fas fa-arrow-right me-1"></i>View Issues
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.circular-progress {
+    width: 60px;
+    height: 60px;
+    background: conic-gradient(#28a745 var(--percentage, 0%), #f8f9fa 0);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    position: relative;
+}
+
+.circular-progress::before {
+    content: '';
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+}
+
+.percentage {
+    position: relative;
+    z-index: 1;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,676 @@
+{% extends "base.html" %}
+
+{% block title %}Tree Cutting Issues - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="fw-bold">
+                    <i class="fas fa-tree me-2 text-primary"></i>Tree Cutting Issues
+                </h1>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter buttons -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
+                    <i class="fas fa-list me-1"></i>All Issues
+                </button>
+                <button type="button" class="btn btn-outline-warning filter-btn" data-filter="needs-review">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Needs Manual Review
+                </button>
+                <button type="button" class="btn btn-outline-success filter-btn" data-filter="ai-match">
+                    <i class="fas fa-check me-1"></i>AI Match
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    {% if complaints %}
+        <div class="row g-4">
+            {% for complaint in complaints %}
+                <div class="col-lg-6 complaint-item {{ 'needs-review' if complaint.needs_manual_review else 'ai-match' }}">
+                    <div class="card complaint-card {{ 'warning-card' if complaint.needs_manual_review else '' }}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">
+                                    Report #{{ loop.index }}
+                                    {% if complaint.needs_manual_review %}
+                                        <i class="fas fa-exclamation-triangle text-warning ms-2" title="Needs Manual Review"></i>
+                                    {% else %}
+                                        <i class="fas fa-check-circle text-success ms-2" title="AI Prediction Match"></i>
+                                    {% endif %}
+                                </h6>
+                                <small class="text-muted">
+                                    {{ complaint.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                    <br>
+                                    <strong>User:</strong> {{ complaint.user_name }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-{{ 'danger' if complaint.status == 'Pending' else 'warning' if complaint.status == 'Under-review' else 'success' }}">
+                                    {{ complaint.status }}
+                                </span>
+                                {% if complaint.needs_manual_review %}
+                                    <br>
+                                    <span class="badge bg-warning text-dark mt-1">
+                                        <i class="fas fa-eye me-1"></i>Manual Review Required
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- AI Prediction vs Issue Type Comparison -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="prediction-box">
+                                        <strong><i class="fas fa-user me-1"></i>Reported Issue:</strong>
+                                        <p class="mb-1 text-primary">{{ complaint.issue_type.replace('_', ' ').title() }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="prediction-box">
+                                        <strong><i class="fas fa-robot me-1"></i>AI Prediction:</strong>
+                                        {% if complaint.prediction_result %}
+                                            <p class="mb-1 {{ 'text-success' if complaint.ai_prediction_match else 'text-danger' }}">
+                                                {{ complaint.prediction_result[0].predicted_class.replace('_', ' ').title() }}
+                                                ({{ "%.1f" | format(complaint.prediction_result[0].confidence * 100) }}%)
+                                            </p>
+                                        {% else %}
+                                            <p class="mb-1 text-muted">No prediction available</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if not complaint.ai_prediction_match %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Warning:</strong> The AI prediction doesn't match the reported issue type. Please review the images carefully before approving.
+                                </div>
+                            {% endif %}
+                            
+                            <div class="row mb-3">
+                                <div class="col-sm-6">
+                                    <strong><i class="fas fa-map-marker-alt me-1"></i>Location:</strong>
+                                    <p class="mb-1">{{ complaint.location }}</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong><i class="fas fa-calendar me-1"></i>Submitted:</strong>
+                                    <p class="mb-1">{{ complaint.created_at.strftime('%B %d, %Y') }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong><i class="fas fa-align-left me-1"></i>Description:</strong>
+                                <p class="mb-2">{{ complaint.description }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong><i class="fas fa-images me-1"></i>Images:</strong>
+                                <div class="image-grid mt-1">
+                                    {% for image in complaint.images[:3] %}
+                                        <div class="image-wrapper" onclick="openImageModal(this.querySelector('img').src)">
+                                            <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="Problem Image">
+                                            <div class="overlay">
+                                                <i class="fas fa-search-plus" style="color: white; font-size: 24px;"></i>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    {% if complaint.images|length > 3 %}
+                                        <div class="more-images-indicator" 
+                                             onclick="openImageModal('{{ url_for('static', filename='uploads/' + complaint.images[3]) }}')">
+                                            <small class="text-muted">
+                                                <i class="fas fa-plus-circle me-1"></i>+{{ complaint.images|length - 3 }} more
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if complaint.admin_notes %}
+                                <div class="mb-3">
+                                    <strong><i class="fas fa-sticky-note me-1"></i>Admin Notes:</strong>
+                                    <p class="mb-0 text-muted">{{ complaint.admin_notes }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="d-flex gap-2 flex-wrap">
+                                {% if complaint.status == 'Pending' %}
+                                    <button class="btn btn-success btn-sm" 
+                                            onclick="updateStatus('{{ complaint._id }}', 'Under-review')"
+                                            {{ 'disabled' if complaint.needs_manual_review else '' }}>
+                                        <i class="fas fa-eye me-1"></i>Accept & Review
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" 
+                                            onclick="updateStatus('{{ complaint._id }}', 'Rejected')">
+                                        <i class="fas fa-times me-1"></i>Reject
+                                    </button>
+                                    {% if complaint.needs_manual_review %}
+                                        <button class="btn btn-warning btn-sm" 
+                                                data-bs-toggle="modal" data-bs-target="#manualReviewModal{{ complaint._id }}">
+                                            <i class="fas fa-search me-1"></i>Manual Review
+                                        </button>
+                                    {% endif %}
+                                {% elif complaint.status == 'Under-review' %}
+                                    <button class="btn btn-success btn-sm" 
+                                            onclick="updateStatus('{{ complaint._id }}', 'Resolved')">
+                                        <i class="fas fa-check me-1"></i>Mark Resolved
+                                    </button>
+                                {% endif %}
+                                
+                                <button class="btn btn-outline-secondary btn-sm" 
+                                        data-bs-toggle="modal" data-bs-target="#notesModal{{ complaint._id }}">
+                                    <i class="fas fa-edit me-1"></i>Add Notes
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm"
+                                        onclick="deleteComplaint('{{ complaint._id }}')">
+                                    <i class="fas fa-trash me-1"></i>Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Manual Review Modal -->
+                    {% if complaint.needs_manual_review %}
+                        <div class="modal fade" id="manualReviewModal{{ complaint._id }}">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Manual Review Required</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            <strong>AI Prediction Mismatch Detected</strong>
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title text-primary">User Reported Issue</h6>
+                                                        <p class="card-text">{{ complaint.issue_type.replace('_', ' ').title() }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title text-danger">AI Prediction</h6>
+                                                        {% if complaint.prediction_result %}
+                                                            <p class="card-text">
+                                                                {{ complaint.prediction_result[0].predicted_class.replace('_', ' ').title() }}
+                                                                <br>
+                                                                <small class="text-muted">Confidence: {{ "%.1f" | format(complaint.prediction_result[0].confidence * 100) }}%</small>
+                                                            </p>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <p><strong>Please review the images carefully and decide:</strong></p>
+                                        <ul>
+                                            <li>Does the content match the reported issue type?</li>
+                                            <li>Is the AI prediction more accurate?</li>
+                                            <li>Should this complaint be approved or rejected?</li>
+                                        </ul>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-success" 
+                                                onclick="manualApprove('{{ complaint._id }}')">
+                                            <i class="fas fa-check me-1"></i>Approve After Review
+                                        </button>
+                                        <button type="button" class="btn btn-danger" 
+                                                onclick="updateStatus('{{ complaint._id }}', 'Rejected')">
+                                            <i class="fas fa-times me-1"></i>Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Notes Modal -->
+                    <div class="modal fade" id="notesModal{{ complaint._id }}">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Add Admin Notes</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="notesForm{{ complaint._id }}">
+                                        <input type="hidden" name="complaint_id" value="{{ complaint._id }}">
+                                        <div class="mb-3">
+                                            <label class="form-label">Notes:</label>
+                                            <textarea name="admin_notes" class="form-control" rows="4" 
+                                                      placeholder="Add your notes here...">{{ complaint.admin_notes }}</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Update Status:</label>
+                                            <select name="status" class="form-select">
+                                                <option value="Pending" {{ 'selected' if complaint.status == 'Pending' }}>Pending</option>
+                                                <option value="Under-review" {{ 'selected' if complaint.status == 'Under-review' }}>Under Review</option>
+                                                <option value="Resolved" {{ 'selected' if complaint.status == 'Resolved' }}>Resolved</option>
+                                                <option value="Rejected" {{ 'selected' if complaint.status == 'Rejected' }}>Rejected</option>
+                                            </select>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-success" 
+                                            onclick="saveNotes('{{ complaint._id }}')">Save Changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <img src="https://img.icons8.com/color/128/000000/tree.png" alt="No Issues">
+            <h3 class="mt-3">No Tree Cutting Issues Reported</h3>
+            <p class="text-muted">All clear! No deforestation issues to review at the moment.</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="image-modal-overlay">
+    <div class="image-modal-content">
+        <span class="close-modal" onclick="closeImageModal()">&times;</span>
+        <img id="modalImage" class="modal-image">
+    </div>
+</div>
+
+<style>
+.warning-card {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
+    border-left: 4px solid #ffc107 !important;
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.2);
+}
+
+.prediction-box {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    border-left: 3px solid #dee2e6;
+}
+
+.prediction-box p {
+    font-weight: 500;
+    margin-bottom: 0;
+}
+
+.filter-btn.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.complaint-item {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.complaint-item.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+/* Image Grid Styles */
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.image-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 75%; /* 4:3 aspect ratio */
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.image-wrapper:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.image-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.image-wrapper .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.image-wrapper:hover .overlay {
+    opacity: 1;
+}
+
+.more-images-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed #dee2e6;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 105px;
+}
+
+.more-images-indicator:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.more-images-indicator small {
+    font-weight: 500;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.more-images-indicator:hover small {
+    color: #495057;
+}
+
+/* Image Modal Styles */
+.image-modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.9);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s forwards;
+}
+
+.image-modal-content {
+    position: relative;
+    margin: auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 900px;
+    height: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: zoomIn 0.3s forwards;
+}
+
+.modal-image {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    object-fit: contain;
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: white;
+    font-size: 3rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    z-index: 1051;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+    color: #ccc;
+    text-decoration: none;
+    transform: rotate(90deg);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.8); }
+    to { transform: scale(1); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .image-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+    
+    .close-modal {
+        top: 15px;
+        right: 20px;
+        font-size: 2rem;
+    }
+    
+    .image-modal-content {
+        padding: 15px;
+        width: 95%;
+        height: 95%;
+    }
+    
+    .more-images-indicator {
+        min-height: 80px;
+        padding: 10px;
+    }
+}
+</style>
+
+<script>
+// Filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const complaintItems = document.querySelectorAll('.complaint-item');
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            
+            // Update active button
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filter complaints
+            complaintItems.forEach(item => {
+                if (filter === 'all') {
+                    item.style.display = '';
+                    item.classList.remove('hidden');
+                } else if (item.classList.contains(filter)) {
+                    item.style.display = '';
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                    setTimeout(() => {
+                        item.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+    });
+});
+
+function updateStatus(complaintId, status) {
+    if (confirm(`Are you sure you want to change the status to "${status}"?`)) {
+        fetch('/update_complaint_status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `complaint_id=${complaintId}&status=${status}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Status updated successfully', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Error updating status: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error updating status', 'error');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function manualApprove(complaintId) {
+    if (confirm('Are you sure you want to approve this complaint after manual review?')) {
+        fetch('/update_complaint_status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `complaint_id=${complaintId}&status=Under-review&admin_notes=Manually approved after AI prediction review`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Complaint approved after manual review', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Error approving complaint: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error approving complaint', 'error');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function saveNotes(complaintId) {
+    const form = document.getElementById(`notesForm${complaintId}`);
+    const formData = new FormData(form);
+    
+    fetch('/update_complaint_status', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Notes saved successfully', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showNotification('Error saving notes: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Error saving notes', 'error');
+        console.error('Error:', error);
+    });
+}
+
+function deleteComplaint(complaintId) {
+    if (confirm('Are you sure you want to permanently delete this complaint? This action cannot be undone.')) {
+        fetch(`/delete_complaint/${complaintId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An unexpected error occurred. Please try again.');
+        });
+    }
+}
+
+function showNotification(message, type) {
+    // Use the existing notification system from main.js
+    if (window.showNotification) {
+        window.showNotification(message, type);
+    } else {
+        alert(message);
+    }
+}
+
+// Image modal functions
+function openImageModal(src) {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    modalImage.src = src;
+    modal.style.display = 'flex';
+    
+    // Add event listener to close modal on overlay click
+    modal.onclick = function(event) {
+        if (event.target === modal) {
+            closeImageModal();
+        }
+    };
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+    modal.onclick = null; // Remove event listener
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});
+</script>
+{% endblock %}
